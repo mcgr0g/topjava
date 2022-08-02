@@ -3,11 +3,14 @@ package ru.javawebinar.topjava.util;
 import ru.javawebinar.topjava.model.UserMeal;
 import ru.javawebinar.topjava.model.UserMealWithExcess;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.Month;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
+
+import static ru.javawebinar.topjava.util.TimeUtil.isBetweenHalfOpen;
+
 
 public class UserMealsUtil {
     public static void main(String[] args) {
@@ -28,9 +31,27 @@ public class UserMealsUtil {
     }
 
     public static List<UserMealWithExcess> filteredByCycles(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
-        // TODO return filtered list with excess. Implement by cycles
-        return null;
+        // return filtered list with excess. Implemented by cycles
+        List<UserMealWithExcess> filteredElemets = new ArrayList<>();
+        Map<LocalDate, Integer> caloriesPerDayMap = new HashMap<>();
+        for (UserMeal element : meals) {
+            LocalDate ld = element.getDateTime().toLocalDate();
+            if (!caloriesPerDayMap.containsKey(ld)) {
+                caloriesPerDayMap.put(ld, element.getCalories());
+            } else {
+                caloriesPerDayMap.put(ld, caloriesPerDayMap.get(ld) + element.getCalories());
+            }
+        }
+        for (UserMeal element : meals)
+            if (TimeUtil.isBetweenHalfOpen(element.getDateTime().toLocalTime(), startTime, endTime)) {
+                boolean overcomeDayLimit = false;
+                if (caloriesPerDayMap.get(element.getDateTime().toLocalDate()) > caloriesPerDay)
+                    overcomeDayLimit = true;
+                filteredElemets.add(new UserMealWithExcess(element.getDateTime(), element.getDescription(), element.getCalories(), overcomeDayLimit));
+            }
+        return filteredElemets;
     }
+
 
     public static List<UserMealWithExcess> filteredByStreams(List<UserMeal> meals, LocalTime startTime, LocalTime endTime, int caloriesPerDay) {
         // TODO Implement by streams
